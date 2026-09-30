@@ -1,15 +1,13 @@
-import { MongoClient } from 'mongodb';
+import mongoose from 'mongoose';
 
-const url = 'mongodb://localhost:27017';
-const client = new MongoClient(url);
-
-export const db = client.db('assignment7');
-
-export const connectionDB = async () => {
+export default async function connectionDB(timeout = 5000) {
     try {
-        await client.connect();
-        console.log('Connected to MongoDB');
+        await mongoose.connect('mongodb://localhost:27017/test', {
+            serverSelectionTimeoutMS: timeout,
+        });
+        console.log('Connected to DB');
     } catch (error) {
-        console.log(error);
+        console.log('failed connected to DB');
+        console.error(error);
     }
-};
+}
