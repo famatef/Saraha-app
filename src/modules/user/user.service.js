@@ -4,14 +4,16 @@ import { Encrypt, Decrypt } from "../../common/security/encrypt.js";
 import { hash, compare } from "../../common/security/hash.js";
 import jwt from "jsonwebtoken";
 import {OAuth2Client} from'google-auth-library';
+import { ProviderEnum } from "../../common/enum/user.enum.js";
+
 const client = new OAuth2Client();
     
 
 export const signup = async (req, res,next) => {
-    const { fname, lname, email, password, age, gender, phone } = req.body;
-
+    
+    const { fname, lname, email, age,gender,phone,password,cpassword } = req.body;
     if (await userModel.findOne({ email: email.toLowerCase() })) {
-        throw new Error("email already exists");
+        return res.status(409).json({ message: "email already exists" });
     }
 
     const user = await dbservice.create({
@@ -19,17 +21,27 @@ export const signup = async (req, res,next) => {
         data: {
             fname,
             lname,
-            email,
-            password: await hash(password),
+            email: email.toLowerCase(),
             age,
             gender,
             phone: Encrypt(phone),
-            provider: "system"
+            password: await hash(password),
+            cpassword: await hash(cpassword),
         }
     });
+    
+    
+    
 
-    return res.status(201).json(user);
-};
+
+
+
+return res.status(200).json({
+        message: "success",
+
+})
+}
+
 
 export const signupGmail = async (req, res,next) => {
     const { idToken } = req.body;
@@ -50,10 +62,10 @@ export const signupGmail = async (req, res,next) => {
             email,
             profileImage: picture,
             isConfirmed:email_verified,
-            provider: "google"
+            provider: ProviderEnum.google
         });
     }
-    if(user.provider === "system"){
+    if(user.provider === ProviderEnum.system){
         throw new Error("login with system account first");
     }
     const access_token = jwt.sign({ userId: user._id, email: user.email }, "fam1", {
@@ -69,7 +81,7 @@ export const signupGmail = async (req, res,next) => {
         refresh_token
         
     });
-    throw new Error(err.message);
+    
 };
 
     
@@ -80,7 +92,7 @@ export const signupGmail = async (req, res,next) => {
 
 export const signin = async (req, res,next) => {
     const { email, password } = req.body;
-    const user = await dbservice.find({
+    const user = await dbservice.findOne({
         model: userModel,
         filter: { email: email.toLowerCase(), provider: "system" }
     });
@@ -115,21 +127,13 @@ export const signin = async (req, res,next) => {
 };
 
 export const getprofile = async (req, res,next) => {
-    const { token } = req.body;
 
-    if (!token) {
-        throw new Error("token not found");
-    }
-
-    const decoded = jwt.verify(token, "fam1");
-    const user = await dbservice.findById({ model: userModel, id: decoded.userId });
-
-    if (!user) {
-        throw new Error("user not found");
+    if (!req.user) {
+        throw new Error("user not found", { cause: 401 });
     }
 
     return res.status(200).json({
         message: "success",
-        user: { ...user.toObject(), phone: Decrypt(user.phone) }
+        user: req.user,
     });
 };

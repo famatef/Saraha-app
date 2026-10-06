@@ -1,83 +1,83 @@
 import mongoose from 'mongoose';
-const userSchema = new mongoose.Schema({
-    fname:{
-        type:String,
-        required:true,
-        trim:true,
-        minlength:3,
-        maxlength:20
+import { GenderEnum, RoleEnum, ProviderEnum } from '../../common/enum/user.enum.js';
 
-    },
-    lname:{
-        type:String,
-        required:true,
-        trim:true,
-        minlength:3,
-        maxlength:20
-
-    },
-    email:{
-        type:String,
-        required:true,
-        unique:true,
-        trim:true,
-        lowercase:true,
-
-    },
-    password:{
-        type:String,
-        required:function(){
-            return this.provider === "system" ? true : false;
+const userSchema = new mongoose.Schema(
+    {
+        fname: {
+            type: String,
+            required: true,
+            trim: true,
+            minlength: 3,
+            maxlength: 20
         },
-        trim:true,
-        minlength:6,
-        
-
-    },
-    age:{
-        type:Number,
-        required:function(){
-            return this.provider === "system" ? true : false;
+        lname: {
+            type: String,
+            required: true,
+            trim: true,
+            minlength: 3,
+            maxlength: 20
         },
-        trim:true,
-        min:18,
-        max:100
-    },
-    gender:{
-        type:String,
-        enum:["male","female"],
-        default:"male"
-    },
-    profileImage:{
-        type:String,
-        default:""
-    },
-    phone:{
-        type:String,
-        required:function(){
-            return this.provider === "system" ? true : false;
+        email: {
+            type: String,
+            required: true,
+            unique: true,
+            trim: true,
+            lowercase: true
         },
-        
-        trim:true
+        password: {
+            type: String,
+            required: function () {
+                return this.provider === ProviderEnum.system;
+            },
+            trim: true
+        },
+        age: {
+            type: Number,
+            required: function () {
+                return this.provider === ProviderEnum.system;
+            },
+            trim: true,
+            min: 18,
+            max: 100
+        },
+        gender: {
+            type: String,
+            enum: Object.values(GenderEnum),
+            default: GenderEnum.male
+        },
+        profileImage: {
+            type: String
+        },
+        role: {
+            type: String,
+            enum: Object.values(RoleEnum),
+            default: RoleEnum.user
+        },
+        phone: {
+            type: String,
+            required: function () {
+                return this.provider === ProviderEnum.system;
+            },
+            trim: true
+        },
+        provider: {
+            type: String,
+            enum: Object.values(ProviderEnum),
+            default: ProviderEnum.system
+        },
+        isConfirmed: {
+            type: Boolean,
+            default: false
+        }
     },
-    provider:{
-        type:String,
-        enum:["google","system"],
-        default:"system"
-    },
-    isConfirmed:{
-        type:Boolean,
-        default:false
-    }
-
-    
-    },{
-        timestamps:true,
-        strict:true,
-        strictQuery:true,
-        toJSON:{virtuals:true},
-        toObject:{virtuals:true}
+    {
+        timestamps: true,
+        strict: true,
+        strictQuery: true,
+        toJSON: { virtuals: true },
+        toObject: { virtuals: true }
     }
 );
-const userModel = mongoose.models.user || mongoose.model("user", userSchema);
+
+const userModel = mongoose.models.user || mongoose.model('user', userSchema);
 export default userModel;

@@ -15,9 +15,11 @@
     "cors": "^2.8.6",
     "express": "^5.2.1",
     "google-auth-library": "^11.1.0",
+    "joi": "^18.2.9",
     "jsonwebtoken": "^9.0.3",
     "mongodb": "^7.6.0",
     "mongoose": "^9.10.1",
+    "multer": "^2.4.0",
     "mysql2": "^3.24.2",
     "sequelize": "^6.37.8"
   }
